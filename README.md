@@ -3,6 +3,7 @@ Documentation
 
 To start doc server, under `website` do
 ```
+yarn install
 yarn start
 ```
 
