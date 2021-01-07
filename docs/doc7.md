@@ -1,5 +1,5 @@
 ---
-id: doc1
+id: doc7
 title: privacy-WASM API
 sidebar_label: Getting Started
 ---

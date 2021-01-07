@@ -9,7 +9,7 @@ sidebar_label: Preparing for a Transaction
 Unlike the previous version, `privacy.wasm` now uses one unified function, `createTransaction`, for creating transactions. 
 
 ```js
-createTransaction(txParams, lockTime=0)
+createTransaction(txParams, lockTime=0, cb)
 ```
 
 `txParams` is a JSON string. It can have these fields:
@@ -75,8 +75,8 @@ Here's a quick explanation of the structure:
 You need to have the correct *private key* to decrypt / spend this coin. If you do, call the `decryptCoin` function
 
 ```js
-decryptCoin({ 
+decryptCoin(JSON.stringify({ 
 	Coin: '<your-coin>',
 	KeySet: '<your-serialized-private-key>'
-})
+}), cb)
 ```

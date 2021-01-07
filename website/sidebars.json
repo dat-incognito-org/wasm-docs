@@ -2,10 +2,7 @@
   "docs": {
     "Index": ["index"],
     "Guide": ["doc2", "doc3", "doc4"],
-    "Examples": ["doc6"],
-    "API Reference": ["doc1"]
-  },
-  "docs-other": {
-    "First Category": ["doc5"]
+    "Advanced Transaction Types": ["doc5", "doc6", "doc7"],
+    "API Reference": ["api1"]
   }
 }
