@@ -4,12 +4,79 @@ title: Preparing for a Transaction
 sidebar_label: Preparing for a Transaction
 ---
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. In ac euismod odio, eu consequat dui. Nullam molestie consectetur risus id imperdiet. Proin sodales ornare turpis, non mollis massa ultricies id. Nam at nibh scelerisque, feugiat ante non, dapibus tortor. Vivamus volutpat diam quis tellus elementum bibendum. Praesent semper gravida velit quis aliquam. Etiam in cursus neque. Nam lectus ligula, malesuada et mauris a, bibendum faucibus mi. Phasellus ut interdum felis. Phasellus in odio pulvinar, porttitor urna eget, fringilla lectus. Aliquam sollicitudin est eros. Mauris consectetur quam vitae mauris interdum hendrerit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+## Parameters
 
-Duis et egestas libero, imperdiet faucibus ipsum. Sed posuere eget urna vel feugiat. Vivamus a arcu sagittis, fermentum urna dapibus, congue lectus. Fusce vulputate porttitor nisl, ac cursus elit volutpat vitae. Nullam vitae ipsum egestas, convallis quam non, porta nibh. Morbi gravida erat nec neque bibendum, eu pellentesque velit posuere. Fusce aliquam erat eu massa eleifend tristique.
+Unlike the previous version, `privacy.wasm` now uses one unified function, `createTransaction`, for creating transactions. 
 
-Sed consequat sollicitudin ipsum eget tempus. Integer a aliquet velit. In justo nibh, pellentesque non suscipit eget, gravida vel lacus. Donec odio ante, malesuada in massa quis, pharetra tristique ligula. Donec eros est, tristique eget finibus quis, semper non nisl. Vivamus et elit nec enim ornare placerat. Sed posuere odio a elit cursus sagittis.
+```js
+createTransaction(txParams, lockTime=0)
+```
 
-Phasellus feugiat purus eu tortor ultrices finibus. Ut libero nibh, lobortis et libero nec, dapibus posuere eros. Sed sagittis euismod justo at consectetur. Nulla finibus libero placerat, cursus sapien at, eleifend ligula. Vivamus elit nisl, hendrerit ac nibh eu, ultrices tempus dui. Nam tellus neque, commodo non rhoncus eu, gravida in risus. Nullam id iaculis tortor.
+`txParams` is a JSON string. It can have these fields:
+- `SenderSK`: base64-encoded form of the 32-byte private key for your spending coins
+- `PaymentInfo`: array of receivers, each of which must have *PaymentAddress* and *Amount*
+- `InputCoins`: the coins that will be spent
+- `Fee`: transaction fee (must be in PRV)
+- `TokenID`: identifier for the token being spent (default: *PRV*)
+- `Metadata`: extra information used for special types of transaction such as pDex / Staking feature transactions
+- `Info`: an optional message from sender
+- `CoinCache`: an array of random (encrypted) coins in the Incognito network, used to hide sender identity
+- `TokenParams`: some more parameters, exclusive to `pToken` transactions
 
-Nullam at odio in sem varius tempor sit amet vel lorem. Etiam eu hendrerit nisl. Fusce nibh mauris, vulputate sit amet ex vitae, congue rhoncus nisl. Sed eget tellus purus. Nullam tempus commodo erat ut tristique. Cras accumsan massa sit amet justo consequat eleifend. Integer scelerisque vitae tellus id consectetur.
+Many other function names like `initPrivacyTx`, `staking`, `initBurningRequestTx` are aliases to this same function. They serve compatibility purpose only.
+
+## Customizable Lock Time
+
+As seen above, `createTransaction` takes an optional parameter : `lockTime`. When it is omitted or equals zero, the function will use its internal OS time when making the transaction.
+
+However, there might be special cases where that time is not in sync with the Incognito network's time. This can invalidate your transaction, since Incognito blocks must always go forward in time. To mitigate this, you can query the *network* time from any Incognito node's RPC method `getnetworkinfo`,
+
+```json
+POST : 
+{
+	"jsonrpc": "1.0",
+    "method": "getnetworkinfo",
+    "params": "",
+    "id": 1
+}
+```
+then supply that time as an integer in `lockTime` field.
+
+## Handling Coins
+
+An Incognito coin can be expressed as a JSON object. For example:
+
+```json
+{
+    "Version": "2",
+    "Info": "",
+    "Index": "",
+    "PublicKey": "12a7bUz8HEa6GZrkkKUJdkvUHVmCGHjQzr95Ja3Y9i7Qwm8K8o5",
+    "Commitment": "12rq8iVaLfF8adsrx4FXfvea4gYUtgQUdthX6NQuBekidPrhnk5",
+    "KeyImage": "1yMi2U8eunYMLQ8bz5n95EBExhcFjH4UcTQ7YQLfkRSZ5CEjNo",
+    "SharedRandom": "12uo3kobUwD1uFAoPkptksdeST6pHmT7zBXauyWsZwcEBW7cwvr",
+    "SharedConcealRandom": "",
+    "TxRandom": "12iygivV4yWkaoT7f3iMooJQ49Etdop4pmnnzX2xkvRTAEAmYPkgbuRrCGHaA3RgKiKJTczvzdgmkTCh1oQcTC5LGLarDKtJySto",
+    "Randomness": "15asRu7rx2R3qkvr8WycjF9tR7WHgbxBV3DqLDGVj3jjMp25WV",
+    "Value": "39999999999900",
+    "CoinDetailsEncrypted": "12BvZZsNtitdavf5s62PT7nPs9tdhFECoQQEaD3iQDgxunVksFb",
+    "SNDerivator": "",
+    "AssetTag": ""
+}
+```
+
+Here's a quick explanation of the structure: 
+- `PublicKey` and `CoinDetailsEncrypted` contains the coin's **encrypted** receiver information and amount
+- `Value` is zero if the coin is encrypted, otherwise the plain amount is shown
+- `KeyImage` is used for verification when spending
+- `Info` is an optional message from sender
+- Other fields are computed according to our privacy protocol
+
+You need to have the correct *private key* to decrypt / spend this coin. If you do, call the `decryptCoin` function
+
+```js
+decryptCoin({ 
+	Coin: '<your-coin>',
+	KeySet: '<your-serialized-private-key>'
+})
+```
