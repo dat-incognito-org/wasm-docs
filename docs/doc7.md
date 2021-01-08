@@ -6,83 +6,99 @@ sidebar_label: Feature Transactions
 
 ## The *Metadata* parameter
 
-Recall that `TokenParams` is an optional parameter in `txParams` when calling `createTransaction`. When `TokenParams==null`, a PRV transaction will be created. If you want to transfer a pToken, just pass in an object like following:
+Transferring tokens is not the only thing you can do in Incognito chain. You can become a validator to earn rewards, shield / unshield your coins to and from other chains, swap your `pTokens` permissionlessly, etc...
+
+All you have to do is provide the right `Metadata` that specifies the action you want to do. It is an object in your `txParams` parameter, and gets passed on to the transaction to the network.
 ```json
 {
-    "TokenID": "ABC",
-    "TokenInputs": []
+    // ...
+    "Fee": 10,
+    "Metadata": {
+        "..." : "..."
+    },
+    "Info": "",
+    // ...
 }
 ```
 
-- `SenderSK`: base64-encoded form of the 32-byte private key for your spending coins
-- `PaymentInfo`: array of receivers, each of which must have *PaymentAddress* and *Amount*
-- `InputCoins`: the coins that will be spent
-- `Fee`: transaction fee (must be in PRV)
-- `TokenID`: identifier for the token being spent (default: *PRV*)
-- `Metadata`: extra information used for special types of transaction such as pDex / Staking feature transactions
-- `Info`: an optional message from sender
-- `CoinCache`: an array of random (encrypted) coins in the Incognito network, used to hide sender identity
-- `TokenParams`: some more parameters, exclusive to `pToken` transactions
-
-> Remember to still include a PRV input since the TX fee needs to be in PRV
-
-Example:
+> Both basic and `pToken` transaction can include `Metadata`.
+> There is only one `Metadata` per transaction.
 
 ## Some example `Metadata`
 
-Staking: stake 1750 of your PRV to participate in consensus.
+- Staking: stake 1750 of your PRV to participate in consensus.
 
 ```json
 {
-    //...
-    "Type" : 0,
-    "TokenName" : "<your-desired-name>",
-    "TokenSymbol" : "<your-desired-symbol>",
-    "TokenPayments" : "<receiver-and-amount-to-create>",
-    //...
+    "Type": 63,
+    "Sig": null,
+    "FunderPaymentAddress": "12sxXUjkMJZHz6diDB6yYnSjyYcDYiT5QygUYFsUbGUqK8PH8uhxf4LePiAE8UYoDcNkHAdJJtT1J6T8hcvpZoWLHAp8g6h1BQEfp4h5LQgEPuhMpnVMquvr1xXZZueLhTNCXc8fkVXseeVAGCt8",
+    "RewardReceiverPaymentAddress": "12sxXUjkMJZHz6diDB6yYnSjyYcDYiT5QygUYFsUbGUqK8PH8uhxf4LePiAE8UYoDcNkHAdJJtT1J6T8hcvpZoWLHAp8g6h1BQEfp4h5LQgEPuhMpnVMquvr1xXZZueLhTNCXc8fkVXseeVAGCt8",
+    "StakingAmountShard": 1750000000000,
+    "AutoReStaking": true,
+    "CommitteePublicKey": "121VhftSAygpEJZ..."
 }
 ```
 
+- Contribute: contribute your tokens to the chain's decentralized exchange
 
-```js
-const bridge = global.__gobridge__;
-return new Promise(async(resolve, reject) => {
-    let run = () => {
-        let cb = (err, ...msg) => (err ? reject(err) : resolve(...msg));
-        bridge[key].apply(undefined, [...args, cb]);
-    };
-    if (!(key in bridge)) {
-        reject(`There is nothing defined with the name "${key.toString()}"`);
-        return;
-    }
-    if (typeof bridge[key] !== 'function') {
-        resolve(bridge[key]);
-        return;
-    }
-    run();
-});
+```json
+{
+    "PDEContributionPairID": "SAMPLE-PAIR",
+    "ContributorAddressStr": "12sxXUjkMJZHz6diDB6yYnSjyYcDYiT5QygUYFsUbGUqK8PH8uhxf4LePiAE8UYoDcNkHAdJJtT1J6T8hcvpZoWLHAp8g6h1BQEfp4h5LQgEPuhMpnVMquvr1xXZZueLhTNCXc8fkVXseeVAGCt8",
+    "ContributedAmount": 5000000,
+    "TokenIDStr": "0000000000000000000000000000000000000000000000000000000000000004",
+    "Type": 204,
+}
 ```
+
+- Trade: swap your PRV to get an amount of `pToken` determined by `pDex`'s rates; or vice versa.
+
+```json
+{
+    "TokenIDToBuyStr": "699a3006d1865ebdc437053b33df6a62c6c7c2f554f2fd0adf99a60f5117f945",
+    "TokenIDToSellStr": "0000000000000000000000000000000000000000000000000000000000000004",
+    "SellAmount": 1000000,
+    "TraderAddressStr": "12WHs6NvFwxQsFvUphjDqaHvRcLYyC79dF9kDwdtJRVrwSyA2cs",
+    "Type": 205,
+    "MinAcceptableAmount": 400000,
+    "TradingFee": 25,
+    "TxRandomStr": "13SZePe9Q7nd8XX3Pfu4JpcTTRQgfsEzo4rksDaCspW7GE9CBLHoKMPHcWT5iRaWk6xn8LAsL5ghpgdG9RwoQPGuWGj6CXHenQhe"
+}
+```
+
 ## Burning Coins
 
-Some metadata types, like `BurningRequest` requires your input coins to be **"burned"**. This means one of your receivers' `PaymentAddress` **must** be the Incognito burn address - and that receiver's amount is the **burned amount** .
+Some metadata types, like `BurningRequest` requires your input coins to be **"burned"**. This means one of your receivers" `PaymentAddress` **must** be the Incognito burn address - and that receiver"s amount is the **burned amount** .
 
 The burning address is a constant, so you could just store it for use; or you can query it from the RPC using the method `getburningaddress`.
+
+```json
+POST :
+{
+    "jsonrpc": "1.0",
+    "method": "getburningaddress",
+    "params": [0],
+    "id": 1
+}
+```
 
 Example:
 
 ```json
 {
-    "Metadata" : {},
-    "PaymentInfo" : [],
+    "BurnerAddress": {
+        "OTAPublic": "ag4eqDXA4iywZLfhdHnwfcFIRAAXCleohWfbOzpdecw=",
+        "Pk": "/NPaKTA3pYTjYxdWpSvOlsp+hAzbwc6Q8x0qynd2+ao=",
+        "Tk": "avALxL0vIbNCiJQxg41df7ml71CgzA/BL1M7kjmXiAQ="
+    },
+    "BurningAmount": 100,
+    "TokenID": "699a3006d1865ebdc437053b33df6a62c6c7c2f554f2fd0adf99a60f5117f945",
+    "RemoteAddress": "d5808Ba261c91d640a2D4149E8cdb3fD4512efe4",
+    "Type": 27
 }
 ```
 
 > If your **burned amount** is larger than what is specified on the `Metadata`, the extra will be lost.
 > Therefore, you should test this kind of transaction on the Test network beforehand to make sure it has the exact effect that you want.
-
-The output will look something like this:
-
-```js
-"13U6zeZi5LxsbbwBSic1yMp5kjX..."
-```
 
