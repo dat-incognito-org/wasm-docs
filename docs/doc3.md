@@ -6,7 +6,7 @@ sidebar_label: Preparing for a Transaction
 
 ## Parameters
 
-Unlike the previous version, `privacy.wasm` now uses one unified function, `createTransaction`, for creating transactions. 
+Unlike the previous version, `privacy.wasm` now uses one unified function, `createTransaction`, for creating transactions.
 
 ```js
 createTransaction(txParams, lockTime=0, cb)
@@ -17,10 +17,9 @@ createTransaction(txParams, lockTime=0, cb)
 - `PaymentInfo`: array of receivers, each of which must have *PaymentAddress* and *Amount*
 - `InputCoins`: the coins that will be spent
 - `Fee`: transaction fee (must be in PRV)
-- `TokenID`: identifier for the token being spent (default: *PRV*)
 - `Metadata`: extra information used for special types of transaction such as pDex / Staking feature transactions
 - `Info`: an optional message from sender
-- `CoinCache`: an array of random (encrypted) coins in the Incognito network, used to hide sender identity
+- `CoinCache`: an object of random (encrypted) coins in the Incognito network, used to hide sender identity
 - `TokenParams`: some more parameters, exclusive to `pToken` transactions
 
 Many other function names like `initPrivacyTx`, `staking`, `initBurningRequestTx` are aliases to this same function. They serve compatibility purpose only.
@@ -32,7 +31,7 @@ As seen above, `createTransaction` takes an optional parameter : `lockTime`. Whe
 However, there might be special cases where that time is not in sync with the Incognito network's time. This can invalidate your transaction, since Incognito blocks must always go forward in time. To mitigate this, you can query the *network* time from any Incognito node's RPC method `getnetworkinfo`,
 
 ```json
-POST : 
+POST :
 {
 	"jsonrpc": "1.0",
     "method": "getnetworkinfo",
@@ -65,7 +64,7 @@ An Incognito coin can be expressed as a JSON object. For example:
 }
 ```
 
-Here's a quick explanation of the structure: 
+Here's a quick explanation of the structure:
 - `PublicKey` and `CoinDetailsEncrypted` contains the coin's **encrypted** receiver information and amount
 - `Value` is zero if the coin is encrypted, otherwise the plain amount is shown
 - `KeyImage` is used for verification when spending
@@ -75,7 +74,7 @@ Here's a quick explanation of the structure:
 You need to have the correct *private key* to decrypt / spend this coin. If you do, call the `decryptCoin` function
 
 ```js
-decryptCoin(JSON.stringify({ 
+decryptCoin(JSON.stringify({
 	Coin: '<your-coin>',
 	KeySet: '<your-serialized-private-key>'
 }), cb)

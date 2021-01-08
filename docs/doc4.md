@@ -4,7 +4,7 @@ title: Creating a Transaction
 sidebar_label: Creating a Transaction
 ---
 
-## Parameter Note
+## Formatting parameter
 
 1. Callback function
 
@@ -110,3 +110,13 @@ To read the data inside, simple decode the **Base58Check** and parse to JSON. Yo
     "Metadata": null
 }
 ```
+
+## Fee deduction
+
+Coin-transferring transactions created by `privacy.wasm` always maintain that
+```
+sumInput = sumOutput + fee
+```
+so all the excess input amount, if any, automatically goes to a **"change"** output back to the sender.
+
+> This is why there will later be some examples creating transactions "without receivers"
