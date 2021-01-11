@@ -69,7 +69,7 @@ All you have to do is provide the right `Metadata` that specifies the action you
 
 ## Burning Coins
 
-Some metadata types, like `BurningRequest` requires your input coins to be **"burned"**. This means one of your receivers" `PaymentAddress` **must** be the Incognito burn address - and that receiver"s amount is the **burned amount** .
+Some metadata types, like `BurningRequest` requires your input coins to be **"burned"**. This means one of your receivers' `PaymentAddress` **must** be the Incognito burn address - and that receiver's amount is the **burned amount** .
 
 The burning address is a constant, so you could just store it for use; or you can query it from the RPC using the method `getburningaddress`.
 

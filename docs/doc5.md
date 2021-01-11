@@ -125,7 +125,7 @@ Resulting TX:
 
 ## Creating a custom token
 
-The Incognito network allows creation of custom token, as long as their name & symbol do not conflict with existing ones. Simply set
+The Incognito network allows creation of custom tokens, as long as their name & symbol do not conflict with existing ones. Simply set
 
 ```json
 {

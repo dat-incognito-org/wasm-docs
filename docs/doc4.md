@@ -81,7 +81,7 @@ The output will look something like this:
 "13U6zeZi5LxsbbwBSic1yMp5kjX..."
 ```
 
-It"s a **Base58Check**-encoded string representing the resulting transaction. This can be directly sent to the network via the `sendRawTx` RPC
+It's a **Base58Check**-encoded string representing the resulting transaction. This can be directly sent to the network via the `sendRawTx` RPC
 ```json
 {
     "jsonrpc": "1.0",

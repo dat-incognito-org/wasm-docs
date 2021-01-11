@@ -200,7 +200,8 @@ Output: the `KeySet` object as JSON string
 
 ## Other functions
 
-The function names: `initPrivacyTx`
+The function names:
+- `initPrivacyTx`
 - `staking`
 - `stopAutoStaking`
 - `initPrivacyTokenTx`
@@ -211,4 +212,5 @@ The function names: `initPrivacyTx`
 - `initPRVTradeTx`
 - `initPTokenTradeTx`
 - `withdrawDexTx`
+
 are aliases to `createTransaction`
